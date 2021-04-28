@@ -9,7 +9,7 @@ login.py for fastAPI.
 
 in my case Jwt is used, feel free to remove them at login.py
 
-the example algorithm is usrnet, thanks theirs effort and outstanding work
+the example algorithm is usrnet, thanks for author's outstanding work
 
 
 TODO:
