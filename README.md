@@ -8,3 +8,5 @@ realapplication.py for your algorithm
 login.py for fastAPI
 
 in my case Jwt is used, feel free to remove them at login.py
+
+the example algorithm is usrnet, thanks theirs effort and outstanding work
