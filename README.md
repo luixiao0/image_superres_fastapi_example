@@ -1,7 +1,7 @@
 # image_superres_fastapi_example
 an example on how to wrap your CV master piece with fastAPI
 
-run by uvicorn login:app
+simply exec "uvicorn login:app"
 
 sqlite for userdata and task list
 realapplication.py for your algorithm
