@@ -214,14 +214,14 @@ async def dload(taskid: str, current_user: User = Depends(get_current_active_use
 
 
 @app.get("/preview/{taskid}")
-async def preview(taskid, current_user: User = Depends(get_current_active_user)):
+async def preview(taskid):# current_user: User = Depends(get_current_active_user)):
     task = db.picTask(taskid)
     if task is not None:
-        if task.uid == current_user.id:
-            print(task.preview)
-            img = cv2.imread(task.preview)
-            res, im_g = cv2.imencode(".png", img)
-            return StreamingResponse(io.BytesIO(im_g.tobytes()), media_type="image/png")
+        #if task.uid == current_user.id:
+        print(task.preview)
+        img = cv2.imread(task.preview)
+        res, im_g = cv2.imencode(".png", img)
+        return StreamingResponse(io.BytesIO(im_g.tobytes()), media_type="image/png")
 
 
 @app.on_event('startup')
