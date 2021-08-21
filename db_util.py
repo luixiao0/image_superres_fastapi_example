@@ -82,7 +82,7 @@ class DBmng:
     def newTask(self, img, E_path, uid, noise, sf, width, previewdir):
         self.conn.execute(self.TASK.insert(),
                           {"img": img, "E_path": E_path, "uid": uid, "noiselevel": noise,
-                           "sf": sf, "customized_kernel_width": width, 'state': 0, 'preview':previewdir})
+                           "sf": sf, "customized_kernel_width": width, 'state': 0, 'preview': previewdir})
         task = extractTask(self.conn.execute(
             self.TASK.select().order_by(self.TASK.c.taskid.desc()).limit(1)).fetchone())
         user_task = self.conn.execute(self.USER.select().where(self.USER.c.id == uid)).fetchone()[4]
@@ -97,26 +97,24 @@ class DBmng:
         print(task)
         if task is None:
             return
-
-        self.conn.execute(self.TASK.delete()
-                          .where(self.TASK.c.taskid == taskid))
-
         s = self.USER.select().where(self.USER.c.id == task.uid)
         line = self.conn.execute(s).fetchone()
         print(line)
-        newline = ""
-        taskid = int(taskid)
-        tasks = line[4].split(' ')
-        for task_id in tasks:
-            if taskid != task_id:
-                newline = newline + ' ' + task_id
+        taskid = set([taskid])
+        tasks = line[4].strip().split(' ')
+        tasks = set(tasks)
+        tasks = tasks - taskid
+        tasks = list(tasks)
+        newline = " ".join(tasks)
         self.conn.execute(self.USER.update().
                           where(self.USER.c.id == task.uid).
                           values(tasks=newline))
+        self.conn.execute(self.TASK.delete().where(
+            self.TASK.c.taskid == taskid))
 
-    def collectTODO(self):  # 0:not in pipe, 1:finished 2:in pipe
+    def collectTODO(self):#-2:server full -1:proccess failed 0:not assigned, 1:finished 2:assigned 3:in_queue
         task_orig = self.conn.execute(self.TASK.select().where(
-            or_(self.TASK.c.state == 0, self.TASK.c.state == 2)
+            or_(self.TASK.c.state == 0, self.TASK.c.state == -2)
         )).fetchall()
         tasks = []
         for line in task_orig:
@@ -124,11 +122,11 @@ class DBmng:
                 return tasks
             else:
                 task = extractTask(line)
-                self.toState(task, 2)
+                self.toState(task, 3)
                 tasks.append(task)
         return tasks
 
-    def collectFin(self):  # 0:not in pipe, 1:finished 2:in pipe
+    def collectFin(self):#-2:server full -1:proccess failed 0:not assigned, 1:finished 2:assigned 3:in_queue
         task_orig = self.conn.execute(self.TASK.select().where(
             self.TASK.c.state == 1)).fetchall()
         tasks = []
@@ -142,10 +140,11 @@ class DBmng:
                           values(state=state))
 
     def taskFin(self, task):
-        self.toState(task, 1)
-        self.conn.execute(self.TASK.update().
-                          where(self.TASK.c.taskid == task.taskid).
-                          values(img=task.img, E_path=task.E_path))
+        self.toState(task, task.state)
+        if task.state == 1:
+            self.conn.execute(self.TASK.update().
+                              where(self.TASK.c.taskid == task.taskid).
+                              values(img=task.img, E_path=task.E_path))
 
     def check_username_password(self, uname, psw):
         user = self.findUser(uname)
@@ -165,7 +164,7 @@ class DBmng:
         taskLine = row[4]
         taskLine = trim(taskLine)
         if len(taskLine):
-            print(taskLine)
+            # print(taskLine)
             taskIDs = taskLine.split(' ')
             for taskID in taskIDs:
                 task = self.conn.execute(self.TASK.select().
@@ -173,6 +172,22 @@ class DBmng:
                     fetchone()
                 task_[taskID] = task
         return task_
+
+    def findTask(self, uid, taskID):
+        s = self.USER.select().where(self.USER.c.id == uid)
+        row = self.conn.execute(s).fetchone()
+        taskLine = row[4]
+        taskLine = trim(taskLine)
+        if len(taskLine):
+            print(taskLine)
+            taskIDs = taskLine.split(' ')
+            if (taskID in taskIDs):
+                task = self.conn.execute(self.TASK.select().
+                    where(self.TASK.c.taskid == int(taskID))). \
+                    fetchone()
+                return task
+            else:
+                return {}
 
     def picFinTask(self, taskid):
         s = self.TASK.select().where(self.TASK.c.taskid == taskid)
