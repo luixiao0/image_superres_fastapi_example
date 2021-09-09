@@ -1,6 +1,6 @@
 opencv-python
 numpy
-scipy
+# scipy
 uvicorn
 fastapi
 python-jose
@@ -11,5 +11,5 @@ databases
 sqlalchemy
 aiosqlite
 aiofiles
-torch==1.9.0+cu102
-torchvision==0.10.0+cu102
+# torch==1.9.0+cu102
+# torchvision==0.10.0+cu102
