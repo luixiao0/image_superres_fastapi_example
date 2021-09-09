@@ -1,0 +1,15 @@
+opencv-python
+numpy
+scipy
+uvicorn
+fastapi
+python-jose
+passlib[bcrypt]
+python-multipart
+databases
+requests
+sqlalchemy
+aiosqlite
+aiofiles
+torch
+torchvision
